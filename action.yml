@@ -1,0 +1,81 @@
+name: 'Create Jira Issue from GitHub Issue'
+description: 'Determines Jira issue type based on GitHub labels and creates a corresponding Jira issue.'
+
+inputs:
+  jira-host:
+    description: 'Jira instance base URL'
+    required: true
+  jira-email:
+    description: 'Email for Jira authentication'
+    required: true
+  jira-token:
+    description: 'API Token for Jira authentication'
+    required: true
+  jira-project:
+    description: 'Jira project key'
+    required: true
+  issue-title:
+    description: 'GitHub issue title'
+    required: true
+  issue-number:
+    description: 'GitHub issue number'
+    required: true
+  issue-body:
+    description: 'GitHub issue body'
+    required: false
+    default: ''
+  issue-url:
+    description: 'GitHub issue URL'
+    required: true
+  issue-labels:
+    description: 'JSON string array of GitHub issue labels' # Inputting as JSON string for easier handling in shell
+    required: false
+    default: '[]'
+  repository-name:
+    description: 'Name of the GitHub repository'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # Map GitHub labels to Jira issue types based on project support. Default to 'Bug'.
+    # Priority: bug > enhancement > feature > task > epic > default (Bug)
+    - name: Determine Jira Issue Type
+      id: determine_issuetype
+      shell: bash
+      run: |
+        issue_type="Bug" # Default
+        labels='${{ inputs.issue-labels }}'
+        if [[ $(echo "$labels" | jq 'contains(["bug"])') == "true" ]]; then
+          issue_type="Bug"
+        elif [[ $(echo "$labels" | jq 'contains(["enhancement"])') == "true" ]]; then
+          issue_type="Improvement"
+        elif [[ $(echo "$labels" | jq 'contains(["feature"])') == "true" ]]; then
+          issue_type="New Feature"
+        elif [[ $(echo "$labels" | jq 'contains(["task"])') == "true" ]]; then
+          issue_type="Task"
+        elif [[ $(echo "$labels" | jq 'contains(["epic"])') == "true" ]]; then
+          issue_type="Epic"
+        fi
+        echo "Calculated Jira Issue Type: $issue_type"
+        echo "type=$issue_type" >> $GITHUB_OUTPUT
+
+    - name: Create Jira Issue
+      id: create
+      uses: tomhjp/gh-action-jira-create@v0.2.1
+      env:
+        JIRA_BASE_URL: ${{ inputs.jira-host }}
+        JIRA_USER_EMAIL: ${{ inputs.jira-email }}
+        JIRA_API_TOKEN: ${{ inputs.jira-token }}
+      with:
+        project: ${{ inputs.jira-project }}
+        issuetype: ${{ steps.determine_issuetype.outputs.type }}
+        summary: "${{ inputs.issue-title }} #${{ inputs.issue-number }}"
+        description: |
+          ${{ inputs.issue-body }}
+
+          -----------------------------------------------
+          Created from GitHub Action
+          ${{ inputs.issue-url }}
+        extraFields: '{ "labels": ${{ inputs.issue-labels }}, "components": [{ "name": "${{ inputs.repository-name }}" }] }'
+
