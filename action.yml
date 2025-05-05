@@ -101,8 +101,7 @@ runs:
         summary: "${{ inputs.issue-title }} #${{ inputs.issue-number }}"
         description: |
           ${{ inputs.issue-body }}
-
-          -----------------------------------------------
+          ----
           Created from GitHub Action
           ${{ inputs.issue-url }}
         extraFields: ${{ steps.prepare_extra_fields.outputs.json }}
