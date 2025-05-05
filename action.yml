@@ -78,9 +78,9 @@ runs:
           if ! echo "$labels_json" | jq -e . > /dev/null 2>&1; then
             labels_json='[]'
           fi
-          # Combine into the final JSON structure
-          extra_fields_json=$(jq -n --argjson labels "$labels_json" --argjson components "$components_json" \
-            '{labels: $labels, components: $components}')
+          # Combine into the final JSON structure using compact output
+          extra_fields_json=$(jq -c -n --argjson labels "$labels_json" --argjson components "$components_json" \
+            '{"labels": $labels, "components": $components}')
         else
           # Use the provided extra-fields input directly
           extra_fields_json="$extra_fields_input"
