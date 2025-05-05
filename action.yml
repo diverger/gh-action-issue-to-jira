@@ -32,7 +32,7 @@ inputs:
     description: 'GitHub issue URL'
     required: true
   issue-labels:
-    description: 'JSON string array of GitHub issue labels' # Inputting as JSON string for easier handling in shell
+    description: 'JSON string array of GitHub issue labels'
     required: false
     default: '[]'
   components:
@@ -107,4 +107,3 @@ runs:
           ----
           *Created from [${{ inputs.repository }}: Issue #${{inputs.issue-number}}](${{ inputs.issue-url }})*
         extraFields: ${{ steps.prepare_extra_fields.outputs.json }}
-
