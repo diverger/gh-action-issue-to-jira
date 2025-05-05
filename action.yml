@@ -38,7 +38,7 @@ inputs:
   extra-fields:
     description: 'JSON string for extra fields to pass to the Jira API. Overrides default labels and components if set.'
     required: false
-    default: '{ "labels": ${{ inputs.issue-labels }}, "components": [{ "name": "${{ inputs.components }}" }] }'
+    default: ''
 
 runs:
   using: "composite"
@@ -65,6 +65,29 @@ runs:
         echo "Calculated Jira Issue Type: $issue_type"
         echo "type=$issue_type" >> $GITHUB_OUTPUT
 
+    - name: Prepare Extra Fields
+      id: prepare_extra_fields
+      shell: bash
+      run: |
+        extra_fields_input='${{ inputs.extra-fields }}'
+        if [[ -z "$extra_fields_input" || "$extra_fields_input" == "{}" ]]; then
+          # Construct default JSON if extra-fields is empty or just '{}'
+          labels_json='${{ inputs.issue-labels }}'
+          components_json='[{"name": "${{ inputs.components }}"}]'
+          # Ensure labels_json is a valid JSON array, default to empty array if not
+          if ! echo "$labels_json" | jq -e . > /dev/null 2>&1; then
+            labels_json='[]'
+          fi
+          # Combine into the final JSON structure
+          extra_fields_json=$(jq -n --argjson labels "$labels_json" --argjson components "$components_json" \
+            '{labels: $labels, components: $components}')
+        else
+          # Use the provided extra-fields input directly
+          extra_fields_json="$extra_fields_input"
+        fi
+        echo "Prepared extraFields JSON: $extra_fields_json"
+        echo "json=$extra_fields_json" >> $GITHUB_OUTPUT
+
     - name: Create Jira Issue
       id: create
       uses: tomhjp/gh-action-jira-create@v0.2.1
@@ -82,5 +105,5 @@ runs:
           -----------------------------------------------
           Created from GitHub Action
           ${{ inputs.issue-url }}
-        extraFields: ${{ inputs.extra-fields }}
+        extraFields: ${{ steps.prepare_extra_fields.outputs.json }}
 
