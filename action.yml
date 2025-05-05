@@ -1,5 +1,6 @@
 name: 'Create Jira Issue from GitHub Issue'
 description: 'Determines Jira issue type based on GitHub labels and creates a corresponding Jira issue.'
+author: 'diverger <diverger@live.cn>' # Add author information here
 
 inputs:
   jira-host:
