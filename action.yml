@@ -1,5 +1,6 @@
 name: 'Create Jira Issue from GitHub Issue'
 description: 'Determines Jira issue type based on GitHub labels and creates a corresponding Jira issue.'
+author: 'diverger <diverger@live.cn>' # Add author information here
 
 inputs:
   jira-host:
@@ -31,9 +32,13 @@ inputs:
     description: 'JSON string array of GitHub issue labels' # Inputting as JSON string for easier handling in shell
     required: false
     default: '[]'
-  repository-name:
+  components:
     description: 'Name of the GitHub repository'
     required: true
+  extra-fields:
+    description: 'JSON string for extra fields to pass to the Jira API. Overrides default labels and components if set.'
+    required: false
+    default: '{ "labels": ${{ inputs.issue-labels }}, "components": [{ "name": "${{ inputs.components }}" }] }'
 
 runs:
   using: "composite"
@@ -77,5 +82,5 @@ runs:
           -----------------------------------------------
           Created from GitHub Action
           ${{ inputs.issue-url }}
-        extraFields: '{ "labels": ${{ inputs.issue-labels }}, "components": [{ "name": "${{ inputs.repository-name }}" }] }'
+        extraFields: ${{ inputs.extra-fields }}
 
