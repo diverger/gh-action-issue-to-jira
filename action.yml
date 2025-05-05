@@ -105,6 +105,6 @@ runs:
         description: |
           ${{ inputs.issue-body }}
           ----
-          <small>*Created from [${{ inputs.repository }}: Issue #${{inputs.issue-number}}](${{ inputs.issue-url }})*</small>
+          *Created from [${{ inputs.repository }}: Issue #${{inputs.issue-number}}](${{ inputs.issue-url }})*
         extraFields: ${{ steps.prepare_extra_fields.outputs.json }}
 
