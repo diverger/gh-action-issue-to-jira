@@ -15,6 +15,9 @@ inputs:
   jira-project:
     description: 'Jira project key'
     required: true
+  repository:
+    description: 'GitHub repository name'
+    required: true
   issue-title:
     description: 'GitHub issue title'
     required: true
@@ -102,7 +105,6 @@ runs:
         description: |
           ${{ inputs.issue-body }}
           ----
-          Created from GitHub Action
-          ${{ inputs.issue-url }}
+          Created from [${{ inputs.repository }}: Issue #${{inputs.issue-number}}|${{ inputs.issue-url }}]
         extraFields: ${{ steps.prepare_extra_fields.outputs.json }}
 
